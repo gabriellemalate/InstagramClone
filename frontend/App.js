@@ -22,129 +22,100 @@ import BlockedScreen from './components/main/random/Blocked';
 import { container } from './components/styles';
 import rootReducer from './redux/reducers';
 
-const store = createStore(rootReducer, applyMiddleware(thunk))
+const store = createStore(rootReducer, applyMiddleware(thunk));
 
 LogBox.ignoreLogs(['Setting a timer']);
 const _console = _.clone(console);
-console.warn = message => {
-  if (message.indexOf('Setting a timer') <= -1) {
+console.warn = (message) => {
+  if (!message.includes('Setting a timer')) {
     _console.warn(message);
   }
 };
 
 const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  databaseURL: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
-  measurementId: ""
+  apiKey: "****",
+  authDomain: "****",
+  databaseURL: "****",
+  projectId: "****",
+  storageBucket: "****",
+  messagingSenderId: "****",
+  appId: "****",
+  measurementId: "****"
 };
 
-const logo = require('./assets/logo.png')
+const logo = require('./assets/logo.png');
 
 if (firebase.apps.length === 0) {
-  firebase.initializeApp(firebaseConfig)
+  firebase.initializeApp(firebaseConfig);
 }
 
 const Stack = createStackNavigator();
 
-export class App extends Component {
-  constructor(props) {
-    super()
-    this.state = {
-      loaded: false,
-    }
-  }
+class App extends Component {
+  state = {
+    loggedIn: null,
+    loaded: false,
+  };
 
   componentDidMount() {
     firebase.auth().onAuthStateChanged((user) => {
-      if (!user) {
-        this.setState({
-          loggedIn: false,
-          loaded: true,
-        })
-      } else {
-        this.setState({
-          loggedIn: true,
-          loaded: true,
-        })
-      }
-    })
+      this.setState({
+        loggedIn: !!user,
+        loaded: true,
+      });
+    });
   }
+
   render() {
     const { loggedIn, loaded } = this.state;
-    if (!loaded) {
-      return (
-        <Image style={container.splash} source={logo} />
-      )
-    }
 
-    if (!loggedIn) {
-      return (
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName="Login">
-            <Stack.Screen name="Register" component={RegisterScreen} navigation={this.props.navigation} options={{ headerShown: false }} />
-            <Stack.Screen name="Login" navigation={this.props.navigation} component={LoginScreen} options={{ headerShown: false }} />
-          </Stack.Navigator>
-        </NavigationContainer>
-      );
+    if (!loaded) {
+      return <Image style={container.splash} source={logo} />;
     }
 
     return (
       <Provider store={store}>
-        <NavigationContainer >
-          <Stack.Navigator initialRouteName="Main">
-            <Stack.Screen key={Date.now()} name="Main" component={MainScreen} navigation={this.props.navigation} options={({ route }) => {
-              const routeName = getFocusedRouteNameFromRoute(route) ?? 'Feed';
-
-              switch (routeName) {
-                case 'Camera': {
-                  return {
-                    headerTitle: 'Camera',
-                  };
-                }
-                case 'chat': {
-                  return {
-                    headerTitle: 'Chat',
-                  };
-                }
-                case 'Profile': {
-                  return {
-                    headerTitle: 'Profile',
-                  };
-                }
-                case 'Search': {
-                  return {
-                    headerTitle: 'Search',
-                  };
-                }
-                case 'Feed':
-                default: {
-                  return {
-                    headerTitle: 'Instagram',
-                  };
-                }
-              }
-            }}
-            />
-            <Stack.Screen key={Date.now()} name="Save" component={SaveScreen} navigation={this.props.navigation} />
-            <Stack.Screen key={Date.now()} name="video" component={SaveScreen} navigation={this.props.navigation} />
-            <Stack.Screen key={Date.now()} name="Post" component={PostScreen} navigation={this.props.navigation} />
-            <Stack.Screen key={Date.now()} name="Chat" component={ChatScreen} navigation={this.props.navigation} />
-            <Stack.Screen key={Date.now()} name="ChatList" component={ChatListScreen} navigation={this.props.navigation} />
-            <Stack.Screen key={Date.now()} name="Edit" component={EditScreen} navigation={this.props.navigation} />
-            <Stack.Screen key={Date.now()} name="Profile" component={ProfileScreen} navigation={this.props.navigation} />
-            <Stack.Screen key={Date.now()} name="Comment" component={CommentScreen} navigation={this.props.navigation} />
-            <Stack.Screen key={Date.now()} name="ProfileOther" component={ProfileScreen} navigation={this.props.navigation} />
-            <Stack.Screen key={Date.now()} name="Blocked" component={BlockedScreen} navigation={this.props.navigation} options={{ headerShown: false }} />
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName={loggedIn ? "Main" : "Login"}>
+            {!loggedIn ? (
+              <>
+                <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
+                <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+              </>
+            ) : (
+              <>
+                <Stack.Screen 
+                  name="Main" 
+                  component={MainScreen} 
+                  options={({ route }) => {
+                    const routeName = getFocusedRouteNameFromRoute(route) ?? 'Feed';
+                    const titles = {
+                      Camera: 'Camera',
+                      chat: 'Chat',
+                      Profile: 'Profile',
+                      Search: 'Search',
+                      Feed: 'Instagram',
+                    };
+                    return { headerTitle: titles[routeName] || 'Instagram' };
+                  }}
+                />
+                <Stack.Screen name="Save" component={SaveScreen} />
+                <Stack.Screen name="Video" component={SaveScreen} />
+                <Stack.Screen name="Post" component={PostScreen} />
+                <Stack.Screen name="Chat" component={ChatScreen} />
+                <Stack.Screen name="ChatList" component={ChatListScreen} />
+                <Stack.Screen name="Edit" component={EditScreen} />
+                <Stack.Screen name="Profile" component={ProfileScreen} />
+                <Stack.Screen name="Comment" component={CommentScreen} />
+                <Stack.Screen name="ProfileOther" component={ProfileScreen} />
+                <Stack.Screen name="Blocked" component={BlockedScreen} options={{ headerShown: false }} />
+              </>
+            )}
           </Stack.Navigator>
         </NavigationContainer>
       </Provider>
-    )
+    );
   }
 }
 
-export default App
+export default App;
