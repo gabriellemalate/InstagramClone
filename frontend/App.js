@@ -33,14 +33,14 @@ console.warn = (message) => {
 };
 
 const firebaseConfig = {
-  apiKey: "****",
-  authDomain: "****",
-  databaseURL: "****",
-  projectId: "****",
-  storageBucket: "****",
-  messagingSenderId: "****",
-  appId: "****",
-  measurementId: "****"
+  apiKey: "",
+  authDomain: "",
+  databaseURL: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: "",
+  measurementId: ""
 };
 
 const logo = require('./assets/logo.png');
