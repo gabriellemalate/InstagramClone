@@ -28,4 +28,48 @@ exports.removeLike = functions.firestore.document('/posts/{creatorId}/userPosts/
             })
     })
 
+exports.addFollower = functions.firestore.document('/following/{userId}/userFollowing/{FollowingId}')
+    .onCreate((snap, context) => {
+        return db
+            .collection('users')
+            .doc(context.params.FollowingId)
+            .update({
+                followersCount: admin.firestore.FieldValue.increment(1)
+            }).then(() => {
+                return db
+                    .collection('users')
+                    .doc(context.params.userId)
+                    .update({
+                        followingCount: admin.firestore.FieldValue.increment(1)
+                    })
+            })
+    })
 
+exports.removeFollower = functions.firestore.document('/following/{userId}/userFollowing/{FollowingId}')
+    .onDelete((snap, context) => {
+        return db
+            .collection('users')
+            .doc(context.params.FollowingId)
+            .update({
+                followersCount: admin.firestore.FieldValue.increment(-1)
+            }).then(() => {
+                return db
+                    .collection('users')
+                    .doc(context.params.userId)
+                    .update({
+                        followingCount: admin.firestore.FieldValue.increment(-1)
+                    })
+            })
+    })
+
+exports.addComment = functions.firestore.document('/posts/{creatorId}/userPosts/{postId}/comments/{userId}')
+    .onCreate((snap, context) => {
+        return db
+            .collection("posts")
+            .doc(context.params.creatorId)
+            .collection("userPosts")
+            .doc(context.params.postId)
+            .update({
+                commentsCount: admin.firestore.FieldValue.increment(1)
+            })
+    })
